@@ -71,7 +71,7 @@ class ESCControlNode(Node):
         # Map thrust [0, 100] to pulse width [MIN_PULSE_WIDTH, MAX_PULSE_WIDTH]
         unidirectional = MIN_PULSE_WIDTH + (thrust * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) / 100)
         bidirectional = (thrust / 100) * (MAX_PULSE_WIDTH - NEUTRAL_PULSE_WIDTH) + NEUTRAL_PULSE_WIDTH
-        return bidirectional
+        return unidirectional
     
     def destroy_node(self):
         # Stop ESC signals
