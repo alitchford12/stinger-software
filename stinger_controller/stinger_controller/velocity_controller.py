@@ -10,6 +10,26 @@ class VelocityController(Node):
         
         # TODO: 5.1.a Velocity Controller Setup
         ### STUDENT CODE HERE
+        self.cmd_vel_sub = self.create_subscription(
+            Twist,
+            'cmd_vel',
+            self.cmd_vel_callback,
+            10
+        )
+
+        self.odom_sub = self.create_subscription(
+            Odometry,
+            '/odometry/filtered',
+            self.odometry_callback,
+            10
+        )
+
+        self.wrench_pub = self.create_publisher(
+            WrenchStamped,
+            '/cmd_wrench',
+            10
+        )
+
 
         ### END STUDENT CODE
 
@@ -24,7 +44,13 @@ class VelocityController(Node):
         
         # TODO: 5.1.g Controller Tuning
         ### STUDENT CODE HERE
+        self.Kp_surge = 1
+        self.Ki_surge = 0
+        self.Kd_surge = 0
 
+        self.Kp_yaw = 40
+        self.Ki_yaw = 0
+        self.Kd_yaw = 1
         ### END STUDENT CODE
 
         self.cmd_vel = Twist()
@@ -47,35 +73,38 @@ class VelocityController(Node):
 
         error_surge = 0
         # TODO: 5.1.b Error Calculation
-        ### STUDENT CODE HERE
+        error_surge = self.cmd_vel.linear.x - msg.twist.twist.linear.x
+        error_yaw = self.cmd_vel.angular.z - msg.twist.twist.angular.z
 
-        ### END STUDENT CODE
-
-        P_surge = 0
         # TODO: 5.1.c Proportional Calculation
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        P_surge = self.Kp_surge * error_surge
+        P_yaw = self.Kp_yaw * error_yaw
         
-        I_surge = 0
+        
         # TODO: 5.1.d Integral Calculation
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        self.integral_surge = 0
+        self.integral_yaw = 0
+        if dt > 0:
+            self.integral_surge += error_surge * dt
+            self.integral_yaw += error_yaw * dt
+        I_surge = self.Ki_surge * self.integral_surge
+        I_yaw = self.Ki_yaw * self.integral_yaw
 
         D_surge = 0
+        D_yaw = 0
         # TODO: 5.1.e Derivative Calculation
-        ### STUDENT CODE HERE
+        if (dt >0):
+            D_surge = self.Kd_surge * (error_surge - self.prev_error_surge) / dt
+            D_yaw = self.Kd_yaw * (error_yaw - self.prev_error_yaw) / dt
 
-        ### END STUDENT CODE
-
+        self.prev_error_surge = error_surge
+        self.prev_error_yaw = error_yaw
+     
         control_surge = P_surge + I_surge + D_surge
         output_force.wrench.force.x = control_surge
 
-        # TODO: 5.1.f Yaw Control
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        control_yaw = P_yaw + I_yaw + D_yaw
+        output_force.wrench.torque.z = control_yaw
 
         self.wrench_pub.publish(output_force)
 

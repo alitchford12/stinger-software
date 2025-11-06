@@ -34,14 +34,11 @@ class Detection(Node):
 
         # TODO: 6.1.a Understanding HSV
         # True or False, as my Value approaches 0, the color becomes darker.
-        self.question_1 = None
+        self.question_1 = True
         # True or False, as my Saturation increases, the color becomes whiter.
-        self.question_2 = None
+        self.question_2 = False
         # [0, 255), what hue value might cyan be.
-        self.question_3 = None
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        self.question_3 = 90
 
         self.red_lower = np.zeros((3,))
         self.red_upper = np.zeros((3,))
@@ -66,16 +63,16 @@ class Detection(Node):
         green_mask = np.zeros_like(self.hsv)
 
         # TODO: 6.1.b Masking 
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        
+        red_mask = cv2.inRange(self.hsv, self.red_lower, self.red_upper)
+        green_mask = cv2.inRange(self.hsv, self.green_lower, self.green_upper)
         
         cv2.imshow("Red_mask", red_mask)
         cv2.imshow("Green_mask", green_mask)
         cv2.waitKey(1)
 
         # Find contours for each color
-        red_buoy_list = self.find_circles(red_mask, )
+        red_buoy_list = self.find_circles(red_mask)
         green_buoy_list = self.find_circles(green_mask)
 
         self.get_logger().info(f"Red buoys: {red_buoy_list}")
@@ -96,20 +93,15 @@ class Detection(Node):
 
     def find_circles(self, mask):
         """Find circular contours in a binary mask."""
-
-        # TODO: 6.1.c Contours
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        
         detected = []
-
-        # TODO: 6.1.d Understanding and tuning pixel radius
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
         for cnt in contours:
             (x, y), radius = cv2.minEnclosingCircle(cnt)
             cv2.circle(self.frame, (int(x), int(y)), int(radius), (255, 0, 0), 3)
-            ### STUDENT CODE HERE
-
-            ### END STUDENT CODE
+            detected.append((int(x), int(y), radius))
+            
         cv2.imshow("original_frame", self.frame)
         detected_sorted = sorted(detected, key=lambda x: x[2], reverse=True)
         return detected_sorted

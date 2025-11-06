@@ -15,7 +15,7 @@ class State(Enum):
     PassedThrough = 3
 
 class StateMachine(Node):
-    ####### hi
+    def __init__(self):
         super().__init__("State_Machine")
 
         self.image_width = 1280
@@ -95,9 +95,11 @@ class StateMachine(Node):
             cmd_vel.angular.z = np.sign(cmd_vel.angular.z) * 0.1
 
         # TODO: 7.1.a Transition condition to move out of Search State
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        if left_gate_location >= 0 and right_gate_location >= 0:  # checks if both gate markers are detected
+            if abs(diff_mid) < self.image_width * 0.05:  # checks if centered (less than 5% off)
+                # TODO: is 5% good?
+                self.state = State.Approaching
+        
         return cmd_vel
     
     def approach(self):
@@ -126,9 +128,9 @@ class StateMachine(Node):
         # to be between gate is to be done with the job
 
         # TODO: 7.1.b Transition condition to move out of Approach State
-        ### STUDENT CODE HERE
-
-        ### END STUDENT CODE
+        if gate_fov_bound > 0.3 and abs(diff_mid) < (self.image_width * 0.05):
+            # TODO: is 0.3 a good value? the gate spans 30% image width
+            self.state = State.Passing_Through
 
         return cmd_vel
     
