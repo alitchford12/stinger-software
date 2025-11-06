@@ -15,7 +15,7 @@ class State(Enum):
     PassedThrough = 3
 
 class StateMachine(Node):
-    def __init__(self):
+    ####### hi
         super().__init__("State_Machine")
 
         self.image_width = 1280
